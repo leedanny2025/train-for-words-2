@@ -48,7 +48,7 @@ export default function Dashboard({
   verseStageMode,
   onSetVerseStageMode
 }: DashboardProps) {
-  const [activeFilter, setActiveFilter] = useState<'ALL' | 'VERSE' | 'EXAM' | 'CUSTOM' | 'INCORRECT'>('ALL');
+  const [activeFilter, setActiveFilter] = useState<'ALL' | 'VERSE' | 'CUSTOM' | 'INCORRECT'>('ALL');
   const [activePart, setActivePart] = useState<'ALL' | 1 | 2 | 3 | 4>('ALL');
   const [selectedFolderId, setSelectedFolderId] = useState<string>('all');
   const [renamingFolderId, setRenamingFolderId] = useState<string | null>(null);
@@ -70,11 +70,6 @@ export default function Dashboard({
   const filteredItems = items.filter((item) => {
     if (activeFilter === 'ALL') return true;
     if (activeFilter === 'VERSE') return item.type === ItemType.Verse;
-    if (activeFilter === 'EXAM') {
-      if (item.type !== ItemType.Exam) return false;
-      if (activePart === 'ALL') return true;
-      return getPartForExam(item) === activePart;
-    }
     if (activeFilter === 'CUSTOM') return item.type === ItemType.Custom;
     if (activeFilter === 'INCORRECT') {
       if (selectedFolderId === 'all') {
@@ -209,17 +204,7 @@ export default function Dashboard({
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-transparent'
             }`}
           >
-            핵심 성구 ({items.filter(i => i.type === ItemType.Verse).length})
-          </button>
-          <button
-            onClick={() => { setActiveFilter('EXAM'); setActivePart('ALL'); }}
-            className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold cursor-pointer transition-all ${
-              activeFilter === 'EXAM'
-                ? 'bg-indigo-600 text-white shadow-xs'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-transparent'
-            }`}
-          >
-            기본 종합 시험지 ({items.filter(i => i.type === ItemType.Exam).length})
+            핵심 어휘 ({items.filter(i => i.type === ItemType.Verse).length})
           </button>
           <button
             onClick={() => { setActiveFilter('CUSTOM'); setActivePart('ALL'); }}
@@ -244,13 +229,13 @@ export default function Dashboard({
           </button>
         </div>
 
-        {/* Verse Stage Selection Panel (Only when 'VERSE' filter is active) */}
+        {/* 핵심 어휘 Stage Selection Panel (Only when 'VERSE' filter is active) */}
         {activeFilter === 'VERSE' && (
           <div className="bg-gradient-to-br from-indigo-50/50 to-slate-50 border border-indigo-150 p-5 rounded-2xl flex flex-col gap-4 shadow-3xs animate-in fade-in duration-300">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h4 className="text-sm font-extrabold text-indigo-900 flex items-center gap-1.5 leading-none">
-                  📖 핵심 성구 학습 단계 설정
+                  📖 핵심 어휘 학습 단계 설정
                 </h4>
                 <p className="text-xs text-slate-500 mt-1">
                   원하는 단계만 선택하여 집중 연습하거나 전체 단계를 순차적으로 학습할 수 있습니다.
@@ -304,148 +289,6 @@ export default function Dashboard({
                 })}
               </div>
             </div>
-          </div>
-        )}
-
-        {/* Exam Part Selection Panel (Only when 'EXAM' filter is active) */}
-        {activeFilter === 'EXAM' && (
-          <div className="bg-gradient-to-br from-indigo-50/50 to-slate-50 border border-indigo-150 p-5 rounded-2xl flex flex-col gap-4 shadow-3xs animate-in fade-in duration-300">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <h4 className="text-sm font-extrabold text-indigo-900 flex items-center gap-1.5 leading-none">
-                  📖 기본 종합 시험지 파트 분할 모의테스트
-                </h4>
-                <p className="text-xs text-slate-500 mt-1">
-                  종합 문제를 10문항씩 단계별로 학습하거나 해당 범위의 모든 문항을 연속 순차 평가로 응시할 수 있습니다.
-                </p>
-              </div>
-              
-              <div className="flex items-center gap-2 flex-wrap">
-                <button
-                  onClick={() => {
-                    const examItems = items.filter(i => i.type === ItemType.Exam).sort((a,b) => {
-                      const aN = parseInt(a.id.replace('exam-', ''), 10) || 0;
-                      const bN = parseInt(b.id.replace('exam-', ''), 10) || 0;
-                      return aN - bN;
-                    });
-                    onStartSequentialStudy(examItems);
-                  }}
-                  className="bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all shadow-3xs cursor-pointer"
-                >
-                  <Shuffle className="w-3.5 h-3.5" /> 1-40번 전체 순차 풀기
-                </button>
-              </div>
-            </div>
-
-            {/* Exam Stage Selection Selector strip */}
-            <div className="bg-white border border-indigo-100/50 p-3.5 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3 shadow-3xs">
-              <div className="text-left w-full sm:w-auto">
-                <span className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100">
-                  ⚙️ 종합 시험 출제 단계 범위 설정
-                </span>
-                <p className="text-[11px] text-slate-650 mt-1 font-semibold">
-                  시험 가동 시 원하는 평가 단계만 선택하여 공부하거나 두 단계를 순차적으로 응시할 수 있습니다.
-                </p>
-              </div>
-              <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg shadow-3xs border border-slate-250 self-end sm:self-auto">
-                {(['BOTH', 'STAGE1_ONLY', 'STAGE2_ONLY'] as const).map((mode) => {
-                  const isSelected = examStageMode === mode;
-                  const label = mode === 'BOTH'
-                    ? '1&2단계 둘다'
-                    : mode === 'STAGE1_ONLY'
-                      ? '1단계 만 (빈칸 채우기)'
-                      : '2단계 만 (백지 암송)';
-                  return (
-                    <button
-                      key={mode}
-                      onClick={() => onSetExamStageMode(mode)}
-                      className={`px-2.5 py-1.5 rounded-md text-[11px] font-extrabold cursor-pointer transition-all whitespace-nowrap ${
-                        isSelected
-                          ? 'bg-indigo-600 text-white shadow-xs'
-                          : 'text-slate-600 hover:text-indigo-900 hover:bg-slate-200/50'
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Part Selection subtab pills */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full">
-              {(['ALL', 1, 2, 3, 4] as const).map((part) => {
-                const isSelected = activePart === part;
-                const partLabel = part === 'ALL'
-                  ? '전체 문제 (1~40)'
-                  : `Part ${part} (${(part - 1) * 10 + 1}~${part * 10}번)`;
-
-                // Calculate complete progress of this part
-                const partItems = items.filter(item => {
-                  if (item.type !== ItemType.Exam) return false;
-                  if (part === 'ALL') return true;
-                  return getPartForExam(item) === part;
-                });
-                const masteredCount = partItems.filter(item => {
-                  const p = progress[item.id];
-                  return p && p.stage2Completed && p.stage3Completed;
-                }).length;
-
-                return (
-                  <button
-                    key={part}
-                    onClick={() => setActivePart(part)}
-                    className={`px-3 py-2 rounded-lg text-xs font-bold whitespace-nowrap cursor-pointer transition-all flex items-center gap-1.5 ${
-                      isSelected
-                        ? 'bg-indigo-600 text-white shadow-xs'
-                        : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200/80'
-                    }`}
-                  >
-                    <span>{partLabel}</span>
-                    <span className={`text-[10px] px-1 rounded-sm ${isSelected ? 'bg-indigo-700 text-indigo-100' : 'bg-slate-100 text-slate-500'}`}>
-                      {masteredCount}/{partItems.length}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Secondary actions container for the active part */}
-            {activePart !== 'ALL' && (
-              <div className="bg-white border border-indigo-100/50 p-4 rounded-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                <div>
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider bg-indigo-50 border border-indigo-100 text-indigo-700 px-2 py-0.5 rounded-sm">
-                    Part {activePart} 전용 모의수련
-                  </span>
-                  <p className="text-xs text-slate-600 mt-1 font-medium">
-                    해당 파트의 10문항을 <b>순차 평가 모드</b>로 진입하여 한 문제도 빠짐없이 차례대로 암송 수련 할 수 있습니다.
-                  </p>
-                </div>
-                <div className="flex gap-2 w-full md:w-auto">
-                  <button
-                    onClick={() => {
-                      const partItems = items
-                        .filter(item => item.type === ItemType.Exam && getPartForExam(item) === activePart)
-                        .sort((a,b) => {
-                          const aN = parseInt(a.id.replace('exam-', ''), 10) || 0;
-                          const bN = parseInt(b.id.replace('exam-', ''), 10) || 0;
-                          return aN - bN;
-                        });
-                      onStartSequentialStudy(partItems);
-                    }}
-                    className="flex-1 md:flex-initial bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white text-xs font-bold px-4 py-2.5 rounded-xl flex items-center justify-center gap-1.5 shadow-sm hover:shadow-md transition-all cursor-pointer"
-                  >
-                    🔁 Part {activePart} 순차적으로 시험 보기
-                  </button>
-                </div>
-              </div>
-            )}
-            
-            {activePart === 'ALL' && (
-              <p className="text-[11px] text-indigo-500 font-bold">
-                💡 위에서 특정 파트를 선택하시면 해당 범위의 문항수련 및 연속 순차 시험을 치룰 수 있습니다.
-              </p>
-            )}
           </div>
         )}
 

@@ -4,7 +4,7 @@ export const defaultQuestions: StudyItem[] = [
   {
     id: 'rev-1-1-3',
     type: ItemType.Verse,
-    category: '사명 성구',
+    category: '핵심 어휘',
     keyword: '계 1:1~3',
     question: '계 1:1~3',
     fullAnswer:
@@ -22,7 +22,7 @@ export const defaultQuestions: StudyItem[] = [
   {
     id: 'rev-7-1-4',
     type: ItemType.Verse,
-    category: '사명 성구',
+    category: '핵심 어휘',
     keyword: '계 7:1~4',
     question: '계 7:1~4',
     fullAnswer:
@@ -41,7 +41,7 @@ export const defaultQuestions: StudyItem[] = [
   {
     id: 'rev-10-10-11',
     type: ItemType.Verse,
-    category: '사명 성구',
+    category: '핵심 어휘',
     keyword: '계 10:10~11',
     question: '계 10:10~11',
     fullAnswer:
@@ -58,7 +58,7 @@ export const defaultQuestions: StudyItem[] = [
   {
     id: 'rev-20-4-6',
     type: ItemType.Verse,
-    category: '사명 성구',
+    category: '핵심 어휘',
     keyword: '계 20:4~6',
     question: '계 20:4~6',
     fullAnswer:
@@ -78,7 +78,7 @@ export const defaultQuestions: StudyItem[] = [
   {
     id: 'rev-22-18-19',
     type: ItemType.Verse,
-    category: '사명 성구',
+    category: '핵심 어휘',
     keyword: '계 22:18~19',
     question: '계 22:18~19',
     fullAnswer:
