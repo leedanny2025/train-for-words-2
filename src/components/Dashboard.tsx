@@ -48,7 +48,7 @@ export default function Dashboard({
   verseStageMode,
   onSetVerseStageMode
 }: DashboardProps) {
-  const [activeFilter, setActiveFilter] = useState<'ALL' | 'VERSE' | 'CUSTOM' | 'INCORRECT' | '초등시험' | '중등시험' | '초등비유' | '초등목차' | '중등목차' | '고등목차'>('ALL');
+  const [activeFilter, setActiveFilter] = useState<'ALL' | 'VERSE' | 'CUSTOM' | 'INCORRECT' | '사명자시험' | '초등시험' | '중등시험' | '초등비유' | '초등목차' | '중등목차' | '고등목차'>('ALL');
   const [activePart, setActivePart] = useState<'ALL' | 1 | 2 | 3 | 4>('ALL');
   const [selectedFolderId, setSelectedFolderId] = useState<string>('all');
   const [renamingFolderId, setRenamingFolderId] = useState<string | null>(null);
@@ -71,6 +71,7 @@ export default function Dashboard({
     if (activeFilter === 'ALL') return true;
     if (activeFilter === 'VERSE') return item.type === ItemType.Verse;
     if (activeFilter === 'CUSTOM') return item.type === ItemType.Custom;
+    if (activeFilter === '사명자시험') return item.category === '사명자 시험';
     if (activeFilter === '초등시험') return item.category === '초등 시험';
     if (activeFilter === '중등시험') return item.category === '중등 시험';
     if (activeFilter === '초등비유') return item.category === '초등 비유';
@@ -213,6 +214,17 @@ export default function Dashboard({
             내가 추가한 문제 ({items.filter(i => i.type === ItemType.Custom).length})
           </button>
 
+          <button
+            onClick={() => { setActiveFilter('사명자시험'); setActivePart('ALL'); }}
+            className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold cursor-pointer transition-all whitespace-nowrap ${
+              activeFilter === '사명자시험'
+                ? 'bg-indigo-600 text-white shadow-xs'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-transparent'
+            }`}
+          >
+            사명자 시험 ({items.filter(i => i.category === '사명자 시험').length})
+          </button>
+
           {(['초등시험', '중등시험', '초등비유', '초등목차', '중등목차', '고등목차'] as const).map((f) => {
             const label = f === '초등시험' ? '초등 시험' : f === '중등시험' ? '중등 시험' : f === '초등비유' ? '초등 비유' : f === '초등목차' ? '초등 목차' : f === '중등목차' ? '중등 목차' : '고등 목차';
             const count = items.filter(i => i.category === label).length;
@@ -242,6 +254,55 @@ export default function Dashboard({
             <span>📌 오답 노트 ({incorrectIds.length})</span>
           </button>
         </div>
+
+        {/* 사명자 시험 Stage Selection Panel */}
+        {activeFilter === '사명자시험' && (
+          <div className="bg-gradient-to-br from-indigo-50/50 to-slate-50 border border-indigo-150 p-5 rounded-2xl flex flex-col gap-4 shadow-3xs animate-in fade-in duration-300">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h4 className="text-sm font-extrabold text-indigo-900 flex items-center gap-1.5 leading-none">
+                  📖 사명자 시험 학습 단계 설정
+                </h4>
+                <p className="text-xs text-slate-500 mt-1">
+                  원하는 단계만 선택하여 집중 연습하거나 전체 성구를 순차적으로 학습할 수 있습니다.
+                </p>
+              </div>
+              <button
+                onClick={() => onStartSequentialStudy(items.filter(i => i.category === '사명자 시험'))}
+                className="bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all shadow-3xs cursor-pointer whitespace-nowrap"
+              >
+                <Shuffle className="w-3.5 h-3.5" /> 전체 순차 학습
+              </button>
+            </div>
+            <div className="bg-white border border-indigo-100/50 p-3.5 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3 shadow-3xs">
+              <div className="text-left w-full sm:w-auto">
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100">
+                  ⚙️ 성구 학습 단계 설정
+                </span>
+                <p className="text-[11px] text-slate-500 mt-1 font-semibold">
+                  원하는 단계를 선택하여 해당 단계만 집중 연습할 수 있습니다.
+                </p>
+              </div>
+              <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg shadow-3xs border border-slate-250 self-end sm:self-auto">
+                {(['ALL', 'STAGE1_ONLY', 'STAGE2_ONLY', 'STAGE3_ONLY'] as const).map((mode) => {
+                  const isSelected = verseStageMode === mode;
+                  const modeLabel = mode === 'ALL' ? '전체 단계' : mode === 'STAGE1_ONLY' ? '1단계 (단어선택)' : mode === 'STAGE2_ONLY' ? '2단계 (단어조합)' : '3단계 (백지쓰기)';
+                  return (
+                    <button
+                      key={mode}
+                      onClick={() => onSetVerseStageMode(mode)}
+                      className={`px-2.5 py-1.5 rounded-md text-[11px] font-extrabold cursor-pointer transition-all whitespace-nowrap ${
+                        isSelected ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-600 hover:text-indigo-900 hover:bg-slate-200/50'
+                      }`}
+                    >
+                      {modeLabel}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Exam Category Stage Selection Panel */}
         {(['초등시험', '중등시험', '초등비유', '초등목차', '중등목차', '고등목차'] as const).some(f => f === activeFilter) && (() => {
