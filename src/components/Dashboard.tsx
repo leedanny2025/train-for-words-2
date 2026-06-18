@@ -204,17 +204,6 @@ export default function Dashboard({
             전체 카드 ({items.length})
           </button>
           <button
-            onClick={() => { setActiveFilter('CUSTOM'); setActivePart('ALL'); }}
-            className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold cursor-pointer transition-all ${
-              activeFilter === 'CUSTOM'
-                ? 'bg-indigo-600 text-white shadow-xs'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-transparent'
-            }`}
-          >
-            내가 추가한 문제 ({items.filter(i => i.type === ItemType.Custom).length})
-          </button>
-
-          <button
             onClick={() => { setActiveFilter('사명자시험'); setActivePart('ALL'); }}
             className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold cursor-pointer transition-all whitespace-nowrap ${
               activeFilter === '사명자시험'
