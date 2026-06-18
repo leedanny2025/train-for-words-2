@@ -8,6 +8,7 @@ import Dashboard from './components/Dashboard';
 import WordOrderStage from './components/WordOrderStage';
 import FillBlankStage from './components/FillBlankStage';
 import FullWriteStage from './components/FullWriteStage';
+import TocBulkWriteStage from './components/TocBulkWriteStage';
 import QuestionManage from './components/QuestionManage';
 
 export default function App() {
@@ -64,6 +65,10 @@ export default function App() {
   // Multi-question sequence states
   const [sessionQueue, setSessionQueue] = useState<StudyItem[]>([]);
   const [currentQueueIndex, setCurrentQueueIndex] = useState<number>(-1);
+
+  // Toc bulk write state
+  const [tocBulkItems, setTocBulkItems] = useState<StudyItem[]>([]);
+  const [tocBulkLabel, setTocBulkLabel] = useState<string>('');
 
   // Exam study configuration (STAGE1_ONLY, STAGE2_ONLY, or BOTH)
   const [examStageMode, setExamStageMode] = useState<'BOTH' | 'STAGE1_ONLY' | 'STAGE2_ONLY'>(() => {
@@ -308,6 +313,13 @@ export default function App() {
     setCurrentStage(getStartingStage(items[0]));
   };
 
+  const handleStartTocBulkWrite = (items: StudyItem[], categoryLabel: string) => {
+    if (items.length === 0) return;
+    setTocBulkItems(items);
+    setTocBulkLabel(categoryLabel);
+    setCurrentStage('TOC_BULK');
+  };
+
   const handleToggleIncorrect = (itemId: string) => {
     setIncorrectIds((prev) => {
       const isExist = prev.includes(itemId);
@@ -512,6 +524,7 @@ export default function App() {
                 onSetExamStageMode={handleSetExamStageMode}
                 verseStageMode={verseStageMode}
                 onSetVerseStageMode={handleSetVerseStageMode}
+                onStartTocBulkWrite={handleStartTocBulkWrite}
               />
             </motion.div>
           )}
@@ -763,6 +776,26 @@ export default function App() {
                   />
                 )}
               </div>
+            </motion.div>
+          )}
+
+          {currentStage === 'TOC_BULK' && tocBulkItems.length > 0 && (
+            <motion.div
+              key="toc-bulk"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.2 }}
+            >
+              <TocBulkWriteStage
+                items={tocBulkItems}
+                categoryLabel={tocBulkLabel}
+                onExit={() => {
+                  setCurrentStage('DASHBOARD');
+                  setTocBulkItems([]);
+                  setTocBulkLabel('');
+                }}
+              />
             </motion.div>
           )}
 

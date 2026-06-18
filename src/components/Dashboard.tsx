@@ -25,6 +25,8 @@ interface DashboardProps {
   // Verse stage configuration
   verseStageMode: 'ALL' | 'STAGE1_ONLY' | 'STAGE2_ONLY' | 'STAGE3_ONLY';
   onSetVerseStageMode: (mode: 'ALL' | 'STAGE1_ONLY' | 'STAGE2_ONLY' | 'STAGE3_ONLY') => void;
+  // Toc bulk write
+  onStartTocBulkWrite: (items: StudyItem[], categoryLabel: string) => void;
 }
 
 export default function Dashboard({
@@ -46,7 +48,8 @@ export default function Dashboard({
   examStageMode,
   onSetExamStageMode,
   verseStageMode,
-  onSetVerseStageMode
+  onSetVerseStageMode,
+  onStartTocBulkWrite
 }: DashboardProps) {
   const [activeFilter, setActiveFilter] = useState<'ALL' | 'VERSE' | 'CUSTOM' | 'INCORRECT' | '사명자시험' | '초등시험' | '중등시험' | '초등비유' | '초등목차' | '중등목차' | '고등목차'>('ALL');
   const [activePart, setActivePart] = useState<'ALL' | 1 | 2 | 3 | 4>('ALL');
@@ -300,6 +303,7 @@ export default function Dashboard({
             '초등목차': '초등 목차', '중등목차': '중등 목차', '고등목차': '고등 목차',
           };
           const label = labelMap[activeFilter] ?? '';
+          const isToc = ['초등목차', '중등목차', '고등목차'].includes(activeFilter);
           return (
             <div className="bg-gradient-to-br from-indigo-50/50 to-slate-50 border border-indigo-150 p-5 rounded-2xl flex flex-col gap-4 shadow-3xs animate-in fade-in duration-300">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -311,15 +315,28 @@ export default function Dashboard({
                     원하는 단계만 선택하여 집중 연습하거나 전체 문항을 순차적으로 학습할 수 있습니다.
                   </p>
                 </div>
-                <button
-                  onClick={() => {
-                    const catItems = items.filter(i => i.category === label);
-                    onStartSequentialStudy(catItems);
-                  }}
-                  className="bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all shadow-3xs cursor-pointer whitespace-nowrap"
-                >
-                  <Shuffle className="w-3.5 h-3.5" /> {label} 전체 순차 학습
-                </button>
+                <div className="flex items-center gap-2 flex-wrap justify-end">
+                  {isToc && (
+                    <button
+                      onClick={() => {
+                        const catItems = items.filter(i => i.category === label);
+                        onStartTocBulkWrite(catItems, label);
+                      }}
+                      className="bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all shadow-3xs cursor-pointer whitespace-nowrap"
+                    >
+                      📝 몰아서 백지쓰기
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      const catItems = items.filter(i => i.category === label);
+                      onStartSequentialStudy(catItems);
+                    }}
+                    className="bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all shadow-3xs cursor-pointer whitespace-nowrap"
+                  >
+                    <Shuffle className="w-3.5 h-3.5" /> {label} 전체 순차 학습
+                  </button>
+                </div>
               </div>
 
               <div className="bg-white border border-indigo-100/50 p-3.5 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3 shadow-3xs">
