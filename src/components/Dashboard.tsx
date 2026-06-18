@@ -124,7 +124,7 @@ export default function Dashboard({
         
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">핵심 성구 및 수료 종합 암기 학습기</h1>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">글로벌 총회 교육 시험 대비</h1>
             <p className="text-slate-400 mt-2 text-sm sm:text-base max-w-xl">
               단어 조합조립(1단계)부터 주요 단어 빈칸 넣기(2단계), 그리고 완벽하게 직접 받아 적는 전체 암기 쓰기(3단계)까지 단계별로 완벽하게 마스터해보세요.
             </p>
@@ -203,16 +203,6 @@ export default function Dashboard({
             전체 카드 ({items.length})
           </button>
           <button
-            onClick={() => { setActiveFilter('VERSE'); setActivePart('ALL'); }}
-            className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold cursor-pointer transition-all ${
-              activeFilter === 'VERSE'
-                ? 'bg-indigo-600 text-white shadow-xs'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-transparent'
-            }`}
-          >
-            핵심 어휘 ({items.filter(i => i.type === ItemType.Verse).length})
-          </button>
-          <button
             onClick={() => { setActiveFilter('CUSTOM'); setActivePart('ALL'); }}
             className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold cursor-pointer transition-all ${
               activeFilter === 'CUSTOM'
@@ -252,69 +242,6 @@ export default function Dashboard({
             <span>📌 오답 노트 ({incorrectIds.length})</span>
           </button>
         </div>
-
-        {/* 핵심 어휘 Stage Selection Panel (Only when 'VERSE' filter is active) */}
-        {activeFilter === 'VERSE' && (
-          <div className="bg-gradient-to-br from-indigo-50/50 to-slate-50 border border-indigo-150 p-5 rounded-2xl flex flex-col gap-4 shadow-3xs animate-in fade-in duration-300">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <h4 className="text-sm font-extrabold text-indigo-900 flex items-center gap-1.5 leading-none">
-                  📖 핵심 어휘 학습 단계 설정
-                </h4>
-                <p className="text-xs text-slate-500 mt-1">
-                  원하는 단계만 선택하여 집중 연습하거나 전체 단계를 순차적으로 학습할 수 있습니다.
-                </p>
-              </div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <button
-                  onClick={() => {
-                    const verseItems = items.filter(i => i.type === ItemType.Verse);
-                    onStartSequentialStudy(verseItems);
-                  }}
-                  className="bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all shadow-3xs cursor-pointer"
-                >
-                  <Shuffle className="w-3.5 h-3.5" /> 전체 성구 순차 학습
-                </button>
-              </div>
-            </div>
-
-            <div className="bg-white border border-indigo-100/50 p-3.5 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3 shadow-3xs">
-              <div className="text-left w-full sm:w-auto">
-                <span className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100">
-                  ⚙️ 성구 학습 단계 설정
-                </span>
-                <p className="text-[11px] text-slate-650 mt-1 font-semibold">
-                  원하는 단계를 선택하여 해당 단계만 집중 연습할 수 있습니다.
-                </p>
-              </div>
-              <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg shadow-3xs border border-slate-250 self-end sm:self-auto">
-                {(['ALL', 'STAGE1_ONLY', 'STAGE2_ONLY', 'STAGE3_ONLY'] as const).map((mode) => {
-                  const isSelected = verseStageMode === mode;
-                  const label = mode === 'ALL'
-                    ? '전체 단계'
-                    : mode === 'STAGE1_ONLY'
-                      ? '1단계 (단어선택)'
-                      : mode === 'STAGE2_ONLY'
-                        ? '2단계 (단어조합)'
-                        : '3단계 (백지쓰기)';
-                  return (
-                    <button
-                      key={mode}
-                      onClick={() => onSetVerseStageMode(mode)}
-                      className={`px-2.5 py-1.5 rounded-md text-[11px] font-extrabold cursor-pointer transition-all whitespace-nowrap ${
-                        isSelected
-                          ? 'bg-indigo-600 text-white shadow-xs'
-                          : 'text-slate-600 hover:text-indigo-900 hover:bg-slate-200/50'
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Exam Category Stage Selection Panel */}
         {(['초등시험', '중등시험', '초등비유', '초등목차', '중등목차', '고등목차'] as const).some(f => f === activeFilter) && (() => {

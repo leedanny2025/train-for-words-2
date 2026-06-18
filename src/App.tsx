@@ -448,7 +448,7 @@ export default function App() {
               <Landmark className="w-5 h-5" />
             </div>
             <div>
-              <span className="text-base font-bold text-slate-800 tracking-tight block">시온 학습 Pro 2</span>
+              <span className="text-base font-bold text-slate-800 tracking-tight block">글로벌 총회 교육 시험 대비</span>
               <span className="text-[10px] text-indigo-600 font-extrabold flex items-center gap-0.5">
                 <Sparkles className="w-3 h-3 animate-spin text-indigo-500" /> 학습 분석 기반 단계별 암기 솔루션
               </span>
