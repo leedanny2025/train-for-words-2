@@ -48,7 +48,7 @@ export default function Dashboard({
   verseStageMode,
   onSetVerseStageMode
 }: DashboardProps) {
-  const [activeFilter, setActiveFilter] = useState<'ALL' | 'VERSE' | 'CUSTOM' | 'INCORRECT'>('ALL');
+  const [activeFilter, setActiveFilter] = useState<'ALL' | 'VERSE' | 'CUSTOM' | 'INCORRECT' | '초등시험' | '중등시험' | '초등비유' | '초등목차' | '중등목차' | '고등목차'>('ALL');
   const [activePart, setActivePart] = useState<'ALL' | 1 | 2 | 3 | 4>('ALL');
   const [selectedFolderId, setSelectedFolderId] = useState<string>('all');
   const [renamingFolderId, setRenamingFolderId] = useState<string | null>(null);
@@ -71,6 +71,12 @@ export default function Dashboard({
     if (activeFilter === 'ALL') return true;
     if (activeFilter === 'VERSE') return item.type === ItemType.Verse;
     if (activeFilter === 'CUSTOM') return item.type === ItemType.Custom;
+    if (activeFilter === '초등시험') return item.category === '초등 시험';
+    if (activeFilter === '중등시험') return item.category === '중등 시험';
+    if (activeFilter === '초등비유') return item.category === '초등 비유';
+    if (activeFilter === '초등목차') return item.category === '초등 목차';
+    if (activeFilter === '중등목차') return item.category === '중등 목차';
+    if (activeFilter === '고등목차') return item.category === '고등 목차';
     if (activeFilter === 'INCORRECT') {
       if (selectedFolderId === 'all') {
         return incorrectIds.includes(item.id);
@@ -216,7 +222,25 @@ export default function Dashboard({
           >
             내가 추가한 문제 ({items.filter(i => i.type === ItemType.Custom).length})
           </button>
-          
+
+          {(['초등시험', '중등시험', '초등비유', '초등목차', '중등목차', '고등목차'] as const).map((f) => {
+            const label = f === '초등시험' ? '초등 시험' : f === '중등시험' ? '중등 시험' : f === '초등비유' ? '초등 비유' : f === '초등목차' ? '초등 목차' : f === '중등목차' ? '중등 목차' : '고등 목차';
+            const count = items.filter(i => i.category === label).length;
+            return (
+              <button
+                key={f}
+                onClick={() => { setActiveFilter(f); setActivePart('ALL'); }}
+                className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold cursor-pointer transition-all whitespace-nowrap ${
+                  activeFilter === f
+                    ? 'bg-indigo-600 text-white shadow-xs'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-transparent'
+                }`}
+              >
+                {label} ({count})
+              </button>
+            );
+          })}
+
           <button
             onClick={() => { setActiveFilter('INCORRECT'); setActivePart('ALL'); }}
             className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold cursor-pointer transition-all flex items-center gap-1.5 ${
