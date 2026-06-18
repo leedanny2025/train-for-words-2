@@ -316,6 +316,68 @@ export default function Dashboard({
           </div>
         )}
 
+        {/* Exam Category Stage Selection Panel */}
+        {(['초등시험', '중등시험', '초등비유', '초등목차', '중등목차', '고등목차'] as const).some(f => f === activeFilter) && (() => {
+          const labelMap: Record<string, string> = {
+            '초등시험': '초등 시험', '중등시험': '중등 시험', '초등비유': '초등 비유',
+            '초등목차': '초등 목차', '중등목차': '중등 목차', '고등목차': '고등 목차',
+          };
+          const label = labelMap[activeFilter] ?? '';
+          return (
+            <div className="bg-gradient-to-br from-indigo-50/50 to-slate-50 border border-indigo-150 p-5 rounded-2xl flex flex-col gap-4 shadow-3xs animate-in fade-in duration-300">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h4 className="text-sm font-extrabold text-indigo-900 flex items-center gap-1.5 leading-none">
+                    📝 {label} 학습 단계 설정
+                  </h4>
+                  <p className="text-xs text-slate-500 mt-1">
+                    원하는 단계만 선택하여 집중 연습하거나 전체 문항을 순차적으로 학습할 수 있습니다.
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    const catItems = items.filter(i => i.category === label);
+                    onStartSequentialStudy(catItems);
+                  }}
+                  className="bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all shadow-3xs cursor-pointer whitespace-nowrap"
+                >
+                  <Shuffle className="w-3.5 h-3.5" /> {label} 전체 순차 학습
+                </button>
+              </div>
+
+              <div className="bg-white border border-indigo-100/50 p-3.5 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3 shadow-3xs">
+                <div className="text-left w-full sm:w-auto">
+                  <span className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100">
+                    ⚙️ 시험 학습 단계 설정
+                  </span>
+                  <p className="text-[11px] text-slate-650 mt-1 font-semibold">
+                    원하는 단계를 선택하여 해당 단계만 집중 연습할 수 있습니다.
+                  </p>
+                </div>
+                <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg shadow-3xs border border-slate-250 self-end sm:self-auto">
+                  {(['BOTH', 'STAGE1_ONLY', 'STAGE2_ONLY'] as const).map((mode) => {
+                    const isSelected = examStageMode === mode;
+                    const modeLabel = mode === 'BOTH' ? '전체 단계' : mode === 'STAGE1_ONLY' ? '1단계 (빈칸채우기)' : '2단계 (백지쓰기)';
+                    return (
+                      <button
+                        key={mode}
+                        onClick={() => onSetExamStageMode(mode)}
+                        className={`px-2.5 py-1.5 rounded-md text-[11px] font-extrabold cursor-pointer transition-all whitespace-nowrap ${
+                          isSelected
+                            ? 'bg-indigo-600 text-white shadow-xs'
+                            : 'text-slate-600 hover:text-indigo-900 hover:bg-slate-200/50'
+                        }`}
+                      >
+                        {modeLabel}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+
         {/* Incorrect Folders Selection Panel (Only when 'INCORRECT' filter is active) */}
         {activeFilter === 'INCORRECT' && (
           <div className="bg-gradient-to-br from-rose-50/10 to-slate-50 border border-slate-200 p-5 rounded-2xl flex flex-col gap-4 shadow-3xs animate-in fade-in duration-300">
