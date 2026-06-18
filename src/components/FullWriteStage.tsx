@@ -221,18 +221,18 @@ export default function FullWriteStage({ item, onCompleted, onExit, onIncorrect 
       )}
 
       {/* Action Buttons */}
-      <div className="mt-8 flex justify-end gap-3 font-semibold">
+      <div className="mt-8 flex flex-col sm:flex-row justify-end gap-3 font-semibold">
         {isChecked ? (
           <>
             <button
               onClick={handleReset}
-              className="px-5 py-3 rounded-xl border border-slate-300 text-slate-700 font-medium text-sm hover:bg-slate-50 hover:border-slate-400 focus:ring-2 focus:ring-slate-500/20 focus:outline-hidden transition-all flex items-center gap-1.5 cursor-pointer"
+              className="w-full sm:w-auto px-5 py-3 rounded-xl border border-slate-300 text-slate-700 font-medium text-sm hover:bg-slate-50 hover:border-slate-400 focus:ring-2 focus:ring-slate-500/20 focus:outline-hidden transition-all flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <RotateCcw className="w-4 h-4" /> 다시 공부하기
             </button>
             <button
               onClick={() => onCompleted(score)}
-              className="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm cursor-pointer shadow-md focus:ring-2 focus:ring-indigo-500/20 focus:outline-hidden active:scale-95 transition-all"
+              className="w-full sm:w-auto px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm cursor-pointer shadow-md focus:ring-2 focus:ring-indigo-500/20 focus:outline-hidden active:scale-95 transition-all"
             >
               이번 카드 학습 완성
             </button>
@@ -241,7 +241,7 @@ export default function FullWriteStage({ item, onCompleted, onExit, onIncorrect 
           <button
             onClick={handleCheck}
             disabled={userAnswer.trim().length === 0}
-            className={`px-6 py-3 rounded-xl font-semibold text-sm transition-all focus:ring-2 focus:ring-indigo-500/20 focus:outline-hidden active:scale-95 ${
+            className={`w-full sm:w-auto px-6 py-3 rounded-xl font-semibold text-sm transition-all focus:ring-2 focus:ring-indigo-500/20 focus:outline-hidden active:scale-95 ${
               userAnswer.trim().length > 0
                 ? 'bg-indigo-600 text-white shadow-md hover:bg-indigo-700 cursor-pointer'
                 : 'bg-slate-200 text-slate-400 cursor-not-allowed'

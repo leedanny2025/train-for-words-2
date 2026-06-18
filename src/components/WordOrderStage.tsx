@@ -160,7 +160,7 @@ export default function WordOrderStage({ item, onNextStage, onExit, stageIndex =
                 <motion.div
                   key={chunk.id}
                   layoutId={chunk.id}
-                  className={`inline-flex items-center gap-1 px-2.5 py-1.5 text-sm md:text-base font-semibold rounded-xl border shadow-3xs transition-all relative ${
+                  className={`inline-flex items-center gap-1 px-2.5 py-2 sm:py-1.5 text-sm sm:text-base font-semibold rounded-xl border shadow-3xs transition-all relative ${
                     isChecked
                       ? isSuccess
                         ? 'bg-indigo-600 border-indigo-600 text-white'
@@ -180,7 +180,7 @@ export default function WordOrderStage({ item, onNextStage, onExit, stageIndex =
                         e.stopPropagation();
                         moveChunk(index, -1);
                       }}
-                      className="p-1 text-[11px] font-bold text-indigo-400 hover:text-indigo-700 hover:bg-slate-200 hover:border-slate-300 rounded cursor-pointer select-none leading-none"
+                      className="p-1.5 sm:p-1 text-[11px] font-bold text-indigo-400 hover:text-indigo-700 hover:bg-slate-200 hover:border-slate-300 rounded cursor-pointer select-none leading-none"
                       title="왼쪽으로 이동"
                     >
                       ◀
@@ -198,7 +198,7 @@ export default function WordOrderStage({ item, onNextStage, onExit, stageIndex =
                         e.stopPropagation();
                         moveChunk(index, 1);
                       }}
-                      className="p-1 text-[11px] font-bold text-indigo-400 hover:text-indigo-700 hover:bg-slate-200 hover:border-slate-300 rounded cursor-pointer select-none leading-none"
+                      className="p-1.5 sm:p-1 text-[11px] font-bold text-indigo-400 hover:text-indigo-700 hover:bg-slate-200 hover:border-slate-300 rounded cursor-pointer select-none leading-none"
                       title="오른쪽으로 이동"
                     >
                       ▶
@@ -240,7 +240,7 @@ export default function WordOrderStage({ item, onNextStage, onExit, stageIndex =
                 layoutId={chunk.id}
                 onClick={() => handleSelectChunk(chunk)}
                 disabled={isChecked}
-                className="px-3 py-2 text-sm md:text-base font-medium bg-white hover:bg-indigo-600 hover:text-white hover:border-indigo-600 border border-slate-200 rounded-xl text-slate-700 shadow-3xs cursor-pointer transition-all"
+                className="px-3 py-2.5 sm:py-2 text-sm sm:text-base font-medium bg-white hover:bg-indigo-600 hover:text-white hover:border-indigo-600 border border-slate-200 rounded-xl text-slate-700 shadow-3xs cursor-pointer transition-all active:scale-95"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
@@ -308,21 +308,21 @@ export default function WordOrderStage({ item, onNextStage, onExit, stageIndex =
           </motion.div>
         )}
 
-        <div className="flex gap-3 justify-end">
+        <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
           {isChecked && !isSuccess && (
             <button
               onClick={handleReset}
-              className="px-5 py-3 rounded-xl border border-slate-300 text-slate-700 font-medium text-sm hover:bg-slate-50 hover:border-slate-400 transition-colors cursor-pointer"
+              className="w-full sm:w-auto px-5 py-3 rounded-xl border border-slate-300 text-slate-700 font-medium text-sm hover:bg-slate-50 hover:border-slate-400 transition-colors cursor-pointer"
             >
               다시 조합하기
             </button>
           )}
-          
+
           {!isChecked ? (
             <button
               onClick={handleCheck}
               disabled={assembled.length === 0}
-              className={`px-6 py-3 rounded-xl font-semibold text-sm transition-all focus:ring-2 focus:ring-indigo-500/20 active:scale-95 ${
+              className={`w-full sm:w-auto px-6 py-3 rounded-xl font-semibold text-sm transition-all focus:ring-2 focus:ring-indigo-500/20 active:scale-95 ${
                 assembled.length > 0
                   ? 'bg-indigo-600 text-white shadow-md hover:bg-indigo-700 cursor-pointer'
                   : 'bg-slate-200 text-slate-400 cursor-not-allowed'
@@ -333,11 +333,11 @@ export default function WordOrderStage({ item, onNextStage, onExit, stageIndex =
           ) : (
             <button
               onClick={onNextStage}
-              className="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm cursor-pointer shadow-md flex items-center gap-2 focus:ring-2 focus:ring-indigo-500/20 active:scale-95 transition-all"
+              className="w-full sm:w-auto px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm cursor-pointer shadow-md flex items-center justify-center gap-2 focus:ring-2 focus:ring-indigo-500/20 active:scale-95 transition-all"
             >
-              {stageIndex === 1 
-                ? (isSuccess ? '2단계(빈칸 넣기) 이동' : '계속해서 다음 단계 넘어가기')
-                : (isSuccess ? '3단계(전체 쓰기) 이동' : '계속해서 다음 단계 넘어가기')}
+              {stageIndex === 1
+                ? (isSuccess ? '2단계(빈칸 넣기) 이동' : '다음 단계로')
+                : (isSuccess ? '3단계(전체 쓰기) 이동' : '다음 단계로')}
               <ArrowRight className="w-4 h-4" />
             </button>
           )}

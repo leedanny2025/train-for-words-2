@@ -240,11 +240,11 @@ export default function FillBlankStage({ item, onNextStage, onExit, stageIndex =
           </motion.div>
         )}
 
-        <div className="flex gap-3 justify-end">
+        <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
           {isChecked && !isSuccess && (
             <button
               onClick={handleReset}
-              className="px-5 py-3 rounded-xl border border-slate-300 text-slate-700 font-medium text-sm hover:bg-slate-50 hover:border-slate-400 transition-colors cursor-pointer"
+              className="w-full sm:w-auto px-5 py-3 rounded-xl border border-slate-300 text-slate-700 font-medium text-sm hover:bg-slate-50 hover:border-slate-400 transition-colors cursor-pointer"
             >
               인풋 초기화 후 재검색
             </button>
@@ -254,7 +254,7 @@ export default function FillBlankStage({ item, onNextStage, onExit, stageIndex =
             <button
               onClick={handleCheck}
               disabled={Object.keys(selectedAnswers).length === 0}
-              className={`px-6 py-3 rounded-xl font-semibold text-sm transition-all focus:ring-2 focus:ring-indigo-500/20 active:scale-95 ${
+              className={`w-full sm:w-auto px-6 py-3 rounded-xl font-semibold text-sm transition-all focus:ring-2 focus:ring-indigo-500/20 active:scale-95 ${
                 Object.keys(selectedAnswers).length > 0
                   ? 'bg-indigo-600 text-white shadow-md hover:bg-indigo-700 cursor-pointer'
                   : 'bg-slate-200 text-slate-400 cursor-not-allowed'
@@ -265,11 +265,11 @@ export default function FillBlankStage({ item, onNextStage, onExit, stageIndex =
           ) : (
             <button
               onClick={onNextStage}
-              className="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm cursor-pointer shadow-md flex items-center gap-2 focus:ring-2 focus:ring-indigo-500/20 active:scale-95 transition-all"
+              className="w-full sm:w-auto px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm cursor-pointer shadow-md flex items-center justify-center gap-2 focus:ring-2 focus:ring-indigo-500/20 active:scale-95 transition-all"
             >
-              {stageIndex === 1 
-                ? (isSuccess ? '2단계(단어 조합) 이동' : '계속해서 다음 단계 넘어가기')
-                : (isSuccess ? '3단계(전체 쓰기) 이동' : '다음 학습 단계로 가기')}
+              {stageIndex === 1
+                ? (isSuccess ? '2단계(단어 조합) 이동' : '다음 단계로')
+                : (isSuccess ? '3단계(전체 쓰기) 이동' : '다음 단계로')}
               <ArrowRight className="w-4 h-4" />
             </button>
           )}

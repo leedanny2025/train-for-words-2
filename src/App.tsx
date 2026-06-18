@@ -453,21 +453,21 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans" id="applet-main-canvas">
       {/* Absolute top navbar */}
-      <header className="bg-white border-b border-slate-200 py-4 px-6 sticky top-0 z-40 shadow-xs">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="bg-indigo-600 p-2.5 rounded-xl text-white shadow-xs">
-              <Landmark className="w-5 h-5" />
+      <header className="bg-white border-b border-slate-200 py-3 sm:py-4 px-4 sm:px-6 sticky top-0 z-40 shadow-xs">
+        <div className="max-w-6xl mx-auto flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className="bg-indigo-600 p-2 sm:p-2.5 rounded-xl text-white shadow-xs shrink-0">
+              <Landmark className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <div>
-              <span className="text-base font-bold text-slate-800 tracking-tight block">글로벌 총회 교육 시험 대비</span>
-              <span className="text-[10px] text-indigo-600 font-extrabold flex items-center gap-0.5">
+            <div className="min-w-0">
+              <span className="text-sm sm:text-base font-bold text-slate-800 tracking-tight block truncate">글로벌 총회 교육 시험 대비</span>
+              <span className="text-[10px] text-indigo-600 font-extrabold hidden sm:flex items-center gap-0.5">
                 <Sparkles className="w-3 h-3 animate-spin text-indigo-500" /> 학습 분석 기반 단계별 암기 솔루션
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
             {currentStage !== 'DASHBOARD' && (
               <button
                 onClick={() => {
@@ -476,18 +476,20 @@ export default function App() {
                   setSessionQueue([]);
                   setCurrentQueueIndex(-1);
                 }}
-                className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-indigo-600 transition-colors font-bold border border-slate-200 hover:border-indigo-100 rounded-xl px-3 py-1.5 bg-white shadow-3xs cursor-pointer"
+                className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-indigo-600 transition-colors font-bold border border-slate-200 hover:border-indigo-100 rounded-xl px-2.5 sm:px-3 py-1.5 bg-white shadow-3xs cursor-pointer"
               >
-                <ArrowLeft className="w-4 h-4" /> 대시보드 복귀
+                <ArrowLeft className="w-4 h-4" />
+                <span className="hidden sm:inline">대시보드 복귀</span>
               </button>
             )}
 
             <button
               onClick={handleResetAllProgress}
-              className="text-[10px] font-bold text-slate-400 hover:text-rose-600 transition-colors border border-slate-200 hover:border-rose-100 rounded-lg px-2.5 py-1.5 flex items-center gap-1 cursor-pointer"
+              className="text-[10px] font-bold text-slate-400 hover:text-rose-600 transition-colors border border-slate-200 hover:border-rose-100 rounded-lg px-2 sm:px-2.5 py-1.5 flex items-center gap-1 cursor-pointer"
               title="주의: 모든 암기율 통계가 0%로 초기화됩니다."
             >
-              <RefreshCcw className="w-3 h-3" /> 전체 진도 초기화
+              <RefreshCcw className="w-3 h-3" />
+              <span className="hidden sm:inline">전체 진도 초기화</span>
             </button>
           </div>
         </div>
@@ -537,8 +539,58 @@ export default function App() {
               exit={{ opacity: 0 }}
               className="flex flex-col lg:flex-row gap-6 w-full"
             >
-              {/* Sidebar: Progress & Stages */}
-              <aside className="w-full lg:w-80 flex flex-col gap-4 shrink-0">
+              {/* Main Exercise Area — order-1 on mobile (shows first), order-2 on desktop (shows right) */}
+              <div className="flex-1 bg-white border border-slate-200 rounded-2xl p-3 sm:p-5 shadow-xs order-1 lg:order-2">
+                {currentStage === 'STAGE1' && (
+                  currentItem.type === ItemType.Verse ? (
+                    <FillBlankStage
+                      item={currentItem}
+                      onNextStage={handleStage1Complete}
+                      onExit={() => { setCurrentStage('DASHBOARD'); setCurrentItem(null); }}
+                      stageIndex={1}
+                      onIncorrect={handleIncorrect}
+                    />
+                  ) : (
+                    <WordOrderStage
+                      item={currentItem}
+                      onNextStage={handleStage1Complete}
+                      onExit={() => { setCurrentStage('DASHBOARD'); setCurrentItem(null); }}
+                      stageIndex={1}
+                      onIncorrect={handleIncorrect}
+                    />
+                  )
+                )}
+                {currentStage === 'STAGE2' && (
+                  currentItem.type === ItemType.Verse ? (
+                    <WordOrderStage
+                      item={currentItem}
+                      onNextStage={handleStage2Complete}
+                      onExit={() => { setCurrentStage('DASHBOARD'); setCurrentItem(null); }}
+                      stageIndex={2}
+                      onIncorrect={handleIncorrect}
+                    />
+                  ) : (
+                    <FillBlankStage
+                      item={currentItem}
+                      onNextStage={handleStage2Complete}
+                      onExit={() => { setCurrentStage('DASHBOARD'); setCurrentItem(null); }}
+                      stageIndex={2}
+                      onIncorrect={handleIncorrect}
+                    />
+                  )
+                )}
+                {currentStage === 'STAGE3' && (
+                  <FullWriteStage
+                    item={currentItem}
+                    onCompleted={handleStage3Complete}
+                    onExit={() => { setCurrentStage('DASHBOARD'); setCurrentItem(null); }}
+                    onIncorrect={handleIncorrect}
+                  />
+                )}
+              </div>
+
+              {/* Sidebar — order-2 on mobile (shows below exercise), order-1 on desktop (shows left) */}
+              <aside className="w-full lg:w-80 flex flex-col gap-4 shrink-0 order-2 lg:order-1">
                 {/* 1. 학습 진행 단계 */}
                 <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
                   <h2 className="text-sm font-bold mb-4 flex items-center gap-2 text-slate-800">
@@ -727,55 +779,6 @@ export default function App() {
                 </div>
               </aside>
 
-              {/* Main Exercise Area */}
-              <div className="flex-1 bg-white border border-slate-200 rounded-2xl p-2 sm:p-5 shadow-xs">
-                {currentStage === 'STAGE1' && (
-                  currentItem.type === ItemType.Verse ? (
-                    <FillBlankStage
-                      item={currentItem}
-                      onNextStage={handleStage1Complete}
-                      onExit={() => { setCurrentStage('DASHBOARD'); setCurrentItem(null); }}
-                      stageIndex={1}
-                      onIncorrect={handleIncorrect}
-                    />
-                  ) : (
-                    <WordOrderStage
-                      item={currentItem}
-                      onNextStage={handleStage1Complete}
-                      onExit={() => { setCurrentStage('DASHBOARD'); setCurrentItem(null); }}
-                      stageIndex={1}
-                      onIncorrect={handleIncorrect}
-                    />
-                  )
-                )}
-                {currentStage === 'STAGE2' && (
-                  currentItem.type === ItemType.Verse ? (
-                    <WordOrderStage
-                      item={currentItem}
-                      onNextStage={handleStage2Complete}
-                      onExit={() => { setCurrentStage('DASHBOARD'); setCurrentItem(null); }}
-                      stageIndex={2}
-                      onIncorrect={handleIncorrect}
-                    />
-                  ) : (
-                    <FillBlankStage
-                      item={currentItem}
-                      onNextStage={handleStage2Complete}
-                      onExit={() => { setCurrentStage('DASHBOARD'); setCurrentItem(null); }}
-                      stageIndex={2}
-                      onIncorrect={handleIncorrect}
-                    />
-                  )
-                )}
-                {currentStage === 'STAGE3' && (
-                  <FullWriteStage
-                    item={currentItem}
-                    onCompleted={handleStage3Complete}
-                    onExit={() => { setCurrentStage('DASHBOARD'); setCurrentItem(null); }}
-                    onIncorrect={handleIncorrect}
-                  />
-                )}
-              </div>
             </motion.div>
           )}
 
@@ -807,31 +810,31 @@ export default function App() {
               exit={{ opacity: 0, scale: 0.95 }}
               className="w-full max-w-2xl mx-auto"
             >
-              <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm text-center max-w-xl mx-auto flex flex-col items-center">
-                <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center border border-amber-200 mb-6">
-                  <Trophy className="w-8 h-8 text-amber-500" />
+              <div className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-8 shadow-sm text-center max-w-xl mx-auto flex flex-col items-center">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 bg-amber-50 rounded-full flex items-center justify-center border border-amber-200 mb-4 sm:mb-6">
+                  <Trophy className="w-7 h-7 sm:w-8 sm:h-8 text-amber-500" />
                 </div>
-                
+
                 <span className="text-indigo-700 font-extrabold text-xs uppercase tracking-wider bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100 animate-pulse">
                   성구 및 암송 카드 완벽 마스터!
                 </span>
-                
-                <h2 className="text-2xl font-extrabold text-slate-800 mt-3 leading-tight">{currentItem.keyword}</h2>
+
+                <h2 className="text-xl sm:text-2xl font-extrabold text-slate-800 mt-3 leading-tight">{currentItem.keyword}</h2>
                 <p className="text-slate-500 text-sm mt-1.5">{currentItem.category}</p>
 
-                <div className="my-6 p-5 bg-slate-50 border border-slate-200/60 rounded-2xl w-full text-left">
+                <div className="my-4 sm:my-6 p-4 sm:p-5 bg-slate-50 border border-slate-200/60 rounded-2xl w-full text-left">
                   <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">기억해낸 원문</h3>
-                  <p className="text-slate-700 text-sm font-medium leading-relaxed mb-4 italic">
+                  <p className="text-slate-700 text-sm font-medium leading-relaxed mb-3 italic">
                     "{currentItem.question}"
                   </p>
-                  <div className="h-[1px] bg-slate-200/60 my-3" />
-                  <p className="text-slate-800 text-base font-extrabold leading-relaxed text-indigo-900">
+                  <div className="h-[1px] bg-slate-200/60 my-2" />
+                  <p className="text-slate-800 text-sm sm:text-base font-extrabold leading-relaxed text-indigo-900">
                     {currentItem.fullAnswer}
                   </p>
                 </div>
 
-                <div className="flex gap-3 justify-center items-center mb-6">
-                  <span className="text-sm font-semibold text-slate-500">최종 모범 답안 유사도 Score:</span>
+                <div className="flex flex-wrap gap-2 justify-center items-center mb-5 sm:mb-6">
+                  <span className="text-sm font-semibold text-slate-500">최종 유사도:</span>
                   <span className={`px-3 py-1 text-md font-bold rounded-full border ${stageThreeScore >= 85 ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-amber-50 border-amber-200 text-amber-800'}`}>
                     {stageThreeScore}점
                   </span>
@@ -854,7 +857,7 @@ export default function App() {
                     </div>
 
                     {currentQueueIndex < sessionQueue.length - 1 ? (
-                      <div className="flex gap-3 w-full">
+                      <div className="flex flex-col sm:flex-row gap-3 w-full">
                         <button
                           onClick={() => setCurrentStage(getStartingStage(currentItem))}
                           className="flex-1 py-3 border border-slate-300 text-slate-700 hover:bg-slate-100 font-bold rounded-xl transition-all text-sm cursor-pointer"
@@ -871,11 +874,11 @@ export default function App() {
                           }}
                           className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-all text-sm shadow-md cursor-pointer flex items-center justify-center gap-1.5"
                         >
-                          다음 문제 풀기 ({sessionQueue[currentQueueIndex + 1].keyword.split(' ')[0]} {sessionQueue[currentQueueIndex + 1].keyword.split(' ')[1] || ''}) <ChevronRight className="w-4 h-4" />
+                          다음 문제 <ChevronRight className="w-4 h-4" />
                         </button>
                       </div>
                     ) : (
-                      <div className="flex gap-3 w-full">
+                      <div className="flex flex-col sm:flex-row gap-3 w-full">
                         <button
                           onClick={() => setCurrentStage(getStartingStage(currentItem))}
                           className="flex-1 py-3 border border-slate-300 text-slate-700 hover:bg-slate-100 font-bold rounded-xl transition-all text-sm cursor-pointer"
@@ -891,7 +894,7 @@ export default function App() {
                           }}
                           className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition-all text-sm shadow-md cursor-pointer"
                         >
-                          🎉 파트 전체 완주 완료! 대시보드로
+                          🎉 완주! 대시보드로
                         </button>
                       </div>
                     )}
@@ -909,7 +912,7 @@ export default function App() {
                     </button>
                   </div>
                 ) : (
-                  <div className="flex gap-3 w-full">
+                  <div className="flex flex-col sm:flex-row gap-3 w-full">
                     <button
                       onClick={() => setCurrentStage(getStartingStage(currentItem))}
                       className="flex-1 py-3 border border-slate-300 text-slate-700 hover:bg-slate-100 font-bold rounded-xl transition-all text-sm cursor-pointer"

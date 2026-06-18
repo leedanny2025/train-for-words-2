@@ -134,19 +134,19 @@ export default function Dashboard({
             </p>
           </div>
           
-          <div className="flex gap-3 shrink-0 flex-wrap sm:flex-nowrap">
+          <div className="flex gap-3 shrink-0 flex-wrap sm:flex-nowrap w-full sm:w-auto">
             <button
               onClick={onStartRandomSession}
               disabled={items.length === 0}
-              className="px-5 py-3 bg-white text-slate-900 hover:bg-slate-100 rounded-xl font-bold text-sm shadow-xs transition-transform active:scale-95 flex items-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 sm:flex-none px-4 sm:px-5 py-3 bg-white text-slate-900 hover:bg-slate-100 rounded-xl font-bold text-sm shadow-xs transition-transform active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Shuffle className="w-4 h-4 text-indigo-600 animate-pulse" /> 랜덤 종합 평가 출제
+              <Shuffle className="w-4 h-4 text-indigo-600 animate-pulse" /> 랜덤 출제
             </button>
             <button
               onClick={onOpenManage}
-              className="px-5 py-3 bg-indigo-600 border border-indigo-500 hover:bg-indigo-500 rounded-xl font-bold text-sm text-white shadow-xs transition-transform active:scale-95 flex items-center gap-1.5 cursor-pointer"
+              className="flex-1 sm:flex-none px-4 sm:px-5 py-3 bg-indigo-600 border border-indigo-500 hover:bg-indigo-500 rounded-xl font-bold text-sm text-white shadow-xs transition-transform active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
             >
-              <PlusCircle className="w-4 h-4" /> 내 문제 등록 관리
+              <PlusCircle className="w-4 h-4" /> 문제 등록 관리
             </button>
           </div>
         </div>
@@ -760,7 +760,7 @@ export default function Dashboard({
                     {/* Learn action */}
                     <button
                       onClick={() => onStartStudy(item)}
-                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer hover:shadow-xs ${
+                      className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer hover:shadow-xs active:scale-95 ${
                         fullyMastered
                           ? 'bg-indigo-100 text-indigo-800 hover:bg-indigo-200'
                           : 'bg-indigo-600 text-white hover:bg-indigo-700'
