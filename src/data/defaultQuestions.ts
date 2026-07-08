@@ -202,7 +202,7 @@ export const defaultQuestions: StudyItem[] = [
     keyword: '중등 2번',
     question: '하나님께서 영계대로 육계를 창조하시는 목적은 무엇인가?',
     fullAnswer: '사람과 지구촌을 회복하시고 하나님의 통치 세계를 이루시기 위함',
-    blanks: ['사람과 지구촌을 회복하시고', '하나님의 통치 세계를 이루시기 위함'],
+    blanks: ['사람과 지구촌을 회복하시고 하나님의 통치 세계를 이루시기 위함'],
   },
   {
     id: 'exam-m03', type: ItemType.Exam, category: '중등 시험',
