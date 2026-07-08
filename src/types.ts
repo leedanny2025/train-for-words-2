@@ -24,4 +24,4 @@ export interface ProgressState {
   lastStudiedAt: string;
 }
 
-export type StudyStage = 'DASHBOARD' | 'STAGE1' | 'STAGE2' | 'STAGE3' | 'SUMMARY' | 'TOC_BULK';
+export type StudyStage = 'DASHBOARD' | 'STAGE1' | 'STAGE2' | 'STAGE3' | 'SUMMARY' | 'TOC_BULK' | 'EXAM_SHEET';

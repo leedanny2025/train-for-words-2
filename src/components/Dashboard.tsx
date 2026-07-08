@@ -27,6 +27,8 @@ interface DashboardProps {
   onSetVerseStageMode: (mode: 'ALL' | 'STAGE1_ONLY' | 'STAGE2_ONLY' | 'STAGE3_ONLY') => void;
   // Toc bulk write
   onStartTocBulkWrite: (items: StudyItem[], categoryLabel: string) => void;
+  // Exam sheet
+  onStartExamSheet: (items: StudyItem[], categoryLabel: string, startNumbers: number[]) => void;
 }
 
 export default function Dashboard({
@@ -49,7 +51,8 @@ export default function Dashboard({
   onSetExamStageMode,
   verseStageMode,
   onSetVerseStageMode,
-  onStartTocBulkWrite
+  onStartTocBulkWrite,
+  onStartExamSheet
 }: DashboardProps) {
   const [activeFilter, setActiveFilter] = useState<'ALL' | 'VERSE' | 'CUSTOM' | 'INCORRECT' | '사명자시험' | '초등시험' | '중등시험' | '초등비유' | '초등목차' | '중등목차' | '고등목차'>('ALL');
   const [activePart, setActivePart] = useState<'ALL' | 1 | 2 | 3 | 4>('ALL');
@@ -57,6 +60,15 @@ export default function Dashboard({
   const [renamingFolderId, setRenamingFolderId] = useState<string | null>(null);
   const [renamingFolderName, setRenamingFolderName] = useState<string>('');
   const [activeFolderMenuId, setActiveFolderMenuId] = useState<string | null>(null);
+  const [rangeStart, setRangeStart] = useState<string>('');
+  const [rangeEnd, setRangeEnd] = useState<string>('');
+
+  const changeFilter = (f: typeof activeFilter) => {
+    setActiveFilter(f);
+    setActivePart('ALL');
+    setRangeStart('');
+    setRangeEnd('');
+  };
 
   const getPartForExam = (item: StudyItem): number | null => {
     if (item.type !== ItemType.Exam) return null;
@@ -70,7 +82,7 @@ export default function Dashboard({
     return null;
   };
 
-  const filteredItems = items.filter((item) => {
+  const categoryFilteredItems = items.filter((item) => {
     if (activeFilter === 'ALL') return true;
     if (activeFilter === 'VERSE') return item.type === ItemType.Verse;
     if (activeFilter === 'CUSTOM') return item.type === ItemType.Custom;
@@ -91,6 +103,22 @@ export default function Dashboard({
     }
     return true;
   });
+
+  // Range filtering — only applies to specific category filters (not ALL / INCORRECT / VERSE / CUSTOM)
+  const isRangeable = !['ALL', 'INCORRECT', 'VERSE', 'CUSTOM'].includes(activeFilter);
+  const filteredItems = (isRangeable && (rangeStart !== '' || rangeEnd !== ''))
+    ? categoryFilteredItems.filter((_, idx) => {
+        const num = idx + 1;
+        const start = parseInt(rangeStart) || 1;
+        const end = parseInt(rangeEnd) || categoryFilteredItems.length;
+        return num >= start && num <= end;
+      })
+    : categoryFilteredItems;
+
+  // Map item id → 1-based position within category (for number badges)
+  const itemNumberMap: Record<string, number> = isRangeable
+    ? Object.fromEntries(categoryFilteredItems.map((item, idx) => [item.id, idx + 1]))
+    : {};
 
   // Calculate statistics
   const totalCards = items.length;
@@ -197,7 +225,7 @@ export default function Dashboard({
         {/* Category Filter Pills */}
         <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-200 max-w-full">
           <button
-            onClick={() => { setActiveFilter('ALL'); setActivePart('ALL'); }}
+            onClick={() => changeFilter('ALL')}
             className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold cursor-pointer transition-all ${
               activeFilter === 'ALL'
                 ? 'bg-indigo-600 text-white shadow-xs'
@@ -207,7 +235,7 @@ export default function Dashboard({
             전체 카드 ({items.length})
           </button>
           <button
-            onClick={() => { setActiveFilter('사명자시험'); setActivePart('ALL'); }}
+            onClick={() => changeFilter('사명자시험')}
             className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold cursor-pointer transition-all whitespace-nowrap ${
               activeFilter === '사명자시험'
                 ? 'bg-indigo-600 text-white shadow-xs'
@@ -223,7 +251,7 @@ export default function Dashboard({
             return (
               <button
                 key={f}
-                onClick={() => { setActiveFilter(f); setActivePart('ALL'); }}
+                onClick={() => changeFilter(f)}
                 className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold cursor-pointer transition-all whitespace-nowrap ${
                   activeFilter === f
                     ? 'bg-indigo-600 text-white shadow-xs'
@@ -236,7 +264,7 @@ export default function Dashboard({
           })}
 
           <button
-            onClick={() => { setActiveFilter('INCORRECT'); setActivePart('ALL'); }}
+            onClick={() => changeFilter('INCORRECT')}
             className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold cursor-pointer transition-all flex items-center gap-1.5 ${
               activeFilter === 'INCORRECT'
                 ? 'bg-rose-600 text-white shadow-xs'
@@ -259,12 +287,54 @@ export default function Dashboard({
                   원하는 단계만 선택하여 집중 연습하거나 전체 성구를 순차적으로 학습할 수 있습니다.
                 </p>
               </div>
-              <button
-                onClick={() => onStartSequentialStudy(items.filter(i => i.category === '사명자 시험'))}
-                className="bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all shadow-3xs cursor-pointer whitespace-nowrap"
-              >
-                <Shuffle className="w-3.5 h-3.5" /> 전체 순차 학습
-              </button>
+              <div className="flex items-center gap-2 flex-wrap justify-end">
+                <button
+                  onClick={() => {
+                    const startNums = filteredItems.map(item => categoryFilteredItems.indexOf(item) + 1);
+                    onStartExamSheet(filteredItems, '사명자 시험', startNums);
+                  }}
+                  className="bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all shadow-3xs cursor-pointer whitespace-nowrap"
+                >
+                  🗒️ 시험지 풀기
+                </button>
+                <button
+                  onClick={() => onStartSequentialStudy(filteredItems)}
+                  className="bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all shadow-3xs cursor-pointer whitespace-nowrap"
+                >
+                  <Shuffle className="w-3.5 h-3.5" /> 순차 학습
+                </button>
+              </div>
+            </div>
+            {/* Range Selection */}
+            <div className="bg-white border border-indigo-100/50 p-3.5 rounded-xl shadow-3xs">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100">
+                  📌 시험 범위 설정
+                </span>
+                <span className="text-[11px] text-slate-500 font-semibold">전체 {categoryFilteredItems.length}문항</span>
+                <div className="flex items-center gap-1.5 ml-auto flex-wrap">
+                  <input
+                    type="number" min={1} max={categoryFilteredItems.length}
+                    value={rangeStart} onChange={e => setRangeStart(e.target.value)}
+                    placeholder="시작"
+                    className="w-16 px-2 py-1 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-400 text-center font-bold"
+                  />
+                  <span className="text-slate-400 font-bold text-sm">~</span>
+                  <input
+                    type="number" min={1} max={categoryFilteredItems.length}
+                    value={rangeEnd} onChange={e => setRangeEnd(e.target.value)}
+                    placeholder="끝"
+                    className="w-16 px-2 py-1 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-400 text-center font-bold"
+                  />
+                  {(rangeStart !== '' || rangeEnd !== '') && (
+                    <button onClick={() => { setRangeStart(''); setRangeEnd(''); }}
+                      className="text-[10px] text-rose-500 hover:text-rose-700 font-bold cursor-pointer px-1.5 py-0.5 border border-rose-200 rounded bg-rose-50">
+                      초기화
+                    </button>
+                  )}
+                  <span className="text-[11px] text-indigo-600 font-bold">→ {filteredItems.length}문항 선택</span>
+                </div>
+              </div>
             </div>
             <div className="bg-white border border-indigo-100/50 p-3.5 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3 shadow-3xs">
               <div className="text-left w-full sm:w-auto">
@@ -316,29 +386,63 @@ export default function Dashboard({
                   </p>
                 </div>
                 <div className="flex items-center gap-2 flex-wrap justify-end">
+                  <button
+                    onClick={() => {
+                      const startNums = filteredItems.map(item => categoryFilteredItems.indexOf(item) + 1);
+                      onStartExamSheet(filteredItems, label, startNums);
+                    }}
+                    className="bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all shadow-3xs cursor-pointer whitespace-nowrap"
+                  >
+                    🗒️ 시험지 풀기
+                  </button>
                   {isToc && (
                     <button
-                      onClick={() => {
-                        const catItems = items.filter(i => i.category === label);
-                        onStartTocBulkWrite(catItems, label);
-                      }}
-                      className="bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all shadow-3xs cursor-pointer whitespace-nowrap"
+                      onClick={() => onStartTocBulkWrite(filteredItems, label)}
+                      className="bg-slate-600 hover:bg-slate-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all shadow-3xs cursor-pointer whitespace-nowrap"
                     >
-                      📝 몰아서 백지쓰기
+                      📝 백지쓰기
                     </button>
                   )}
                   <button
-                    onClick={() => {
-                      const catItems = items.filter(i => i.category === label);
-                      onStartSequentialStudy(catItems);
-                    }}
+                    onClick={() => onStartSequentialStudy(filteredItems)}
                     className="bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all shadow-3xs cursor-pointer whitespace-nowrap"
                   >
-                    <Shuffle className="w-3.5 h-3.5" /> {label} 전체 순차 학습
+                    <Shuffle className="w-3.5 h-3.5" /> 순차 학습
                   </button>
                 </div>
               </div>
 
+              {/* Range Selection */}
+              <div className="bg-white border border-indigo-100/50 p-3.5 rounded-xl shadow-3xs">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100">
+                    📌 시험 범위 설정
+                  </span>
+                  <span className="text-[11px] text-slate-500 font-semibold">전체 {categoryFilteredItems.length}문항</span>
+                  <div className="flex items-center gap-1.5 ml-auto flex-wrap">
+                    <input
+                      type="number" min={1} max={categoryFilteredItems.length}
+                      value={rangeStart} onChange={e => setRangeStart(e.target.value)}
+                      placeholder="시작"
+                      className="w-16 px-2 py-1 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-400 text-center font-bold"
+                    />
+                    <span className="text-slate-400 font-bold text-sm">~</span>
+                    <input
+                      type="number" min={1} max={categoryFilteredItems.length}
+                      value={rangeEnd} onChange={e => setRangeEnd(e.target.value)}
+                      placeholder="끝"
+                      className="w-16 px-2 py-1 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-400 text-center font-bold"
+                    />
+                    {(rangeStart !== '' || rangeEnd !== '') && (
+                      <button onClick={() => { setRangeStart(''); setRangeEnd(''); }}
+                        className="text-[10px] text-rose-500 hover:text-rose-700 font-bold cursor-pointer px-1.5 py-0.5 border border-rose-200 rounded bg-rose-50">
+                        초기화
+                      </button>
+                    )}
+                    <span className="text-[11px] text-indigo-600 font-bold">→ {filteredItems.length}문항 선택</span>
+                  </div>
+                </div>
+              </div>
               <div className="bg-white border border-indigo-100/50 p-3.5 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3 shadow-3xs">
                 <div className="text-left w-full sm:w-auto">
                   <span className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100">
@@ -601,9 +705,16 @@ export default function Dashboard({
                   <div>
                     {/* Header line */}
                     <div className="flex items-center justify-between gap-2 mb-2">
-                      <span className="px-2.5 py-0.5 text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200 rounded-md">
-                        {item.category}
-                      </span>
+                      <div className="flex items-center gap-1.5">
+                        {isRangeable && itemNumberMap[item.id] !== undefined && (
+                          <span className="text-[10px] font-extrabold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                            #{itemNumberMap[item.id]}
+                          </span>
+                        )}
+                        <span className="px-2.5 py-0.5 text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200 rounded-md">
+                          {item.category}
+                        </span>
+                      </div>
                       <div className="flex items-center gap-1.5 pr-0.5">
                         <div className="relative inline-block text-left">
                           <button

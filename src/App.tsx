@@ -9,6 +9,7 @@ import WordOrderStage from './components/WordOrderStage';
 import FillBlankStage from './components/FillBlankStage';
 import FullWriteStage from './components/FullWriteStage';
 import TocBulkWriteStage from './components/TocBulkWriteStage';
+import ExamSheetStage from './components/ExamSheetStage';
 import QuestionManage from './components/QuestionManage';
 
 export default function App() {
@@ -69,6 +70,11 @@ export default function App() {
   // Toc bulk write state
   const [tocBulkItems, setTocBulkItems] = useState<StudyItem[]>([]);
   const [tocBulkLabel, setTocBulkLabel] = useState<string>('');
+
+  // Exam sheet state
+  const [examSheetItems, setExamSheetItems] = useState<StudyItem[]>([]);
+  const [examSheetLabel, setExamSheetLabel] = useState<string>('');
+  const [examSheetNumbers, setExamSheetNumbers] = useState<number[]>([]);
 
   // Exam study configuration (STAGE1_ONLY, STAGE2_ONLY, or BOTH)
   const [examStageMode, setExamStageMode] = useState<'BOTH' | 'STAGE1_ONLY' | 'STAGE2_ONLY'>(() => {
@@ -320,6 +326,14 @@ export default function App() {
     setCurrentStage('TOC_BULK');
   };
 
+  const handleStartExamSheet = (items: StudyItem[], categoryLabel: string, startNumbers: number[]) => {
+    if (items.length === 0) return;
+    setExamSheetItems(items);
+    setExamSheetLabel(categoryLabel);
+    setExamSheetNumbers(startNumbers);
+    setCurrentStage('EXAM_SHEET');
+  };
+
   const handleToggleIncorrect = (itemId: string) => {
     setIncorrectIds((prev) => {
       const isExist = prev.includes(itemId);
@@ -527,6 +541,7 @@ export default function App() {
                 verseStageMode={verseStageMode}
                 onSetVerseStageMode={handleSetVerseStageMode}
                 onStartTocBulkWrite={handleStartTocBulkWrite}
+                onStartExamSheet={handleStartExamSheet}
               />
             </motion.div>
           )}
@@ -797,6 +812,28 @@ export default function App() {
                   setCurrentStage('DASHBOARD');
                   setTocBulkItems([]);
                   setTocBulkLabel('');
+                }}
+              />
+            </motion.div>
+          )}
+
+          {currentStage === 'EXAM_SHEET' && examSheetItems.length > 0 && (
+            <motion.div
+              key="exam-sheet"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.2 }}
+            >
+              <ExamSheetStage
+                items={examSheetItems}
+                categoryLabel={examSheetLabel}
+                startNumbers={examSheetNumbers}
+                onExit={() => {
+                  setCurrentStage('DASHBOARD');
+                  setExamSheetItems([]);
+                  setExamSheetLabel('');
+                  setExamSheetNumbers([]);
                 }}
               />
             </motion.div>
