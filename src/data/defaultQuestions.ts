@@ -307,7 +307,7 @@ export const defaultQuestions: StudyItem[] = [
     keyword: '중등 17번',
     question: '재림 때 전통 교회가 신천지에 핍박을 퍼부었으나 신천지는 이겼다. 이긴 증거는 무엇인가?',
     fullAnswer: '예수님과 천사들이 함께 추수하심으로 달마다 열두 가지 열매 맺어 급성장함',
-    blanks: ['예수님과 천사들이 함께 추수하심으로', '달마다 열두 가지 열매 맺어 급성장함'],
+    blanks: ['예수님과 천사들이 함께 추수하심으로 달마다 열두 가지 열매 맺어 급성장함'],
   },
   {
     id: 'exam-m18', type: ItemType.Exam, category: '중등 시험',
