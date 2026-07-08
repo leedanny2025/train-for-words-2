@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { RotateCcw, Trophy, CheckCircle, XCircle } from 'lucide-react';
+import { RotateCcw, Trophy, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { StudyItem } from '../types';
 import { calculateSimilarity } from '../utils';
 
@@ -15,32 +15,44 @@ type SheetMode = '빈칸채우기' | '전체쓰기';
 export default function ExamSheetStage({ items, categoryLabel, startNumbers, onExit }: Props) {
   const [mode, setMode] = useState<SheetMode>('전체쓰기');
 
-  // Both modes share the same answer matrix: answers[item_i][blank_j]
+  // Active items (can be narrowed to wrong-only on retry)
+  const [displayItems, setDisplayItems] = useState<StudyItem[]>(items);
+  const [displayNumbers, setDisplayNumbers] = useState<number[]>(
+    startNumbers ?? items.map((_, i) => i + 1)
+  );
+
+  // answers[item_i][blank_j]
   const [answers, setAnswers] = useState<string[][]>(() =>
     items.map(item => Array(item.blanks.length).fill(''))
   );
   const [submitted, setSubmitted] = useState(false);
-  const [scores, setScores] = useState<number[][]>([]); // scores[item][blank]
+  const [scores, setScores] = useState<number[][]>([]);
 
-  // 1단계: shuffled options per item (re-shuffled on reset)
   const [shuffledOptions, setShuffledOptions] = useState<string[][]>(() =>
     items.map(item => [...item.blanks].sort(() => Math.random() - 0.5))
   );
-  // Which dropdown is open: "${itemIndex}-${blankIndex}"
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
 
+  const initFor = (its: StudyItem[]) => ({
+    answers: its.map(item => Array(item.blanks.length).fill('')),
+    shuffled: its.map(item => [...item.blanks].sort(() => Math.random() - 0.5)),
+  });
+
   const resetAll = () => {
-    setAnswers(items.map(item => Array(item.blanks.length).fill('')));
+    const { answers: a, shuffled: s } = initFor(items);
+    setDisplayItems(items);
+    setDisplayNumbers(startNumbers ?? items.map((_, i) => i + 1));
+    setAnswers(a);
     setScores([]);
     setSubmitted(false);
     setOpenDropdownId(null);
-    setShuffledOptions(items.map(item => [...item.blanks].sort(() => Math.random() - 0.5)));
+    setShuffledOptions(s);
   };
 
   const handleModeChange = (m: SheetMode) => { setMode(m); resetAll(); };
 
   const handleSubmit = () => {
-    const computed = items.map((item, i) =>
+    const computed = displayItems.map((item, i) =>
       item.blanks.length > 0
         ? item.blanks.map((blank, j) => calculateSimilarity(answers[i]?.[j] || '', blank))
         : [0]
@@ -70,6 +82,24 @@ export default function ExamSheetStage({ items, categoryLabel, startNumbers, onE
   const avgScore = allItemScores.length
     ? Math.round(allItemScores.reduce((a, b) => a + b, 0) / allItemScores.length) : 0;
   const passCount = allItemScores.filter(s => s >= 85).length;
+  const wrongCount = allItemScores.length - passCount;
+
+  const handleRetryWrong = () => {
+    const wrongIndices = allItemScores
+      .map((score, i) => ({ score, i }))
+      .filter(({ score }) => score < 85)
+      .map(({ i }) => i);
+    const newItems = wrongIndices.map(i => displayItems[i]);
+    const newNumbers = wrongIndices.map(i => displayNumbers[i]);
+    const { answers: a, shuffled: s } = initFor(newItems);
+    setDisplayItems(newItems);
+    setDisplayNumbers(newNumbers);
+    setAnswers(a);
+    setScores([]);
+    setSubmitted(false);
+    setOpenDropdownId(null);
+    setShuffledOptions(s);
+  };
 
   return (
     <div className="w-full max-w-3xl mx-auto p-4 sm:p-5">
@@ -79,9 +109,9 @@ export default function ExamSheetStage({ items, categoryLabel, startNumbers, onE
           <span className="px-3 py-1 text-xs font-bold bg-violet-50 text-violet-700 rounded-full border border-violet-100 flex items-center gap-1 w-max">
             <Trophy className="w-3 h-3" /> {categoryLabel} — 시험지 모드
           </span>
-          <h2 className="text-xl font-bold text-slate-800 mt-2">{items.length}문항</h2>
-          {startNumbers && startNumbers.length > 0 && (
-            <p className="text-xs text-slate-400 mt-0.5">#{startNumbers[0]} ~ #{startNumbers[startNumbers.length - 1]}</p>
+          <h2 className="text-xl font-bold text-slate-800 mt-2">{displayItems.length}문항</h2>
+          {displayNumbers.length > 0 && (
+            <p className="text-xs text-slate-400 mt-0.5">#{displayNumbers[0]} ~ #{displayNumbers[displayNumbers.length - 1]}</p>
           )}
         </div>
         <button onClick={onExit} className="text-xs text-slate-400 hover:text-slate-600 border border-slate-200 rounded-lg px-3 py-1.5 cursor-pointer bg-white shrink-0">
@@ -116,19 +146,40 @@ export default function ExamSheetStage({ items, categoryLabel, startNumbers, onE
 
       {/* Result summary */}
       {submitted && (
-        <div className="bg-violet-50 border border-violet-200 rounded-2xl p-4 mb-5 flex items-center justify-between">
-          <div>
-            <p className="text-sm font-extrabold text-violet-900">채점 결과 ({mode})</p>
-            <p className="text-xs text-violet-700 mt-0.5">{passCount}/{items.length}문항 통과 (85점 이상)</p>
+        <div className="mb-5 flex flex-col gap-3">
+          <div className="bg-violet-50 border border-violet-200 rounded-2xl p-4 flex items-center justify-between">
+            <div>
+              <p className="text-sm font-extrabold text-violet-900">채점 결과 ({mode})</p>
+              <p className="text-xs text-violet-700 mt-0.5">{passCount}/{displayItems.length}문항 통과 (85점 이상)</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className={`text-3xl font-extrabold ${avgScore >= 85 ? 'text-emerald-600' : avgScore >= 60 ? 'text-amber-500' : 'text-rose-600'}`}>
+                {avgScore}점
+              </span>
+              <button onClick={resetAll} className="flex items-center gap-1 text-xs border border-violet-300 bg-white text-violet-700 px-3 py-1.5 rounded-lg font-bold cursor-pointer hover:bg-violet-50">
+                <RotateCcw className="w-3 h-3" /> 전체 다시
+              </button>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
-            <span className={`text-3xl font-extrabold ${avgScore >= 85 ? 'text-emerald-600' : avgScore >= 60 ? 'text-amber-500' : 'text-rose-600'}`}>
-              {avgScore}점
-            </span>
-            <button onClick={resetAll} className="flex items-center gap-1 text-xs border border-violet-300 bg-white text-violet-700 px-3 py-1.5 rounded-lg font-bold cursor-pointer hover:bg-violet-50">
-              <RotateCcw className="w-3 h-3" /> 다시 도전
-            </button>
-          </div>
+
+          {/* Retry wrong prompt */}
+          {wrongCount > 0 && (
+            <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" />
+                <div>
+                  <p className="text-sm font-extrabold text-rose-800">틀린 문제 {wrongCount}개</p>
+                  <p className="text-xs text-rose-600 mt-0.5">틀린 문제들만 다시 풀어볼까요?</p>
+                </div>
+              </div>
+              <button
+                onClick={handleRetryWrong}
+                className="shrink-0 flex items-center gap-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-4 py-2 rounded-xl cursor-pointer transition-all shadow-sm"
+              >
+                <RotateCcw className="w-3 h-3" /> 틀린 문제만 다시 풀기
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -139,8 +190,8 @@ export default function ExamSheetStage({ items, categoryLabel, startNumbers, onE
 
       {/* Item list */}
       <div className="flex flex-col gap-3 mb-6">
-        {items.map((item, i) => {
-          const num = startNumbers ? startNumbers[i] : i + 1;
+        {displayItems.map((item, i) => {
+          const num = displayNumbers[i] ?? (i + 1);
           const itemScore = submitted ? allItemScores[i] ?? null : null;
           const passed = itemScore !== null && itemScore >= 85;
 
@@ -183,7 +234,6 @@ export default function ExamSheetStage({ items, categoryLabel, startNumbers, onE
                       <div className="flex-1 relative">
                         {mode === '빈칸채우기' ? (
                           <>
-                            {/* Clickable blank button */}
                             <button
                               type="button"
                               disabled={submitted}
@@ -201,7 +251,6 @@ export default function ExamSheetStage({ items, categoryLabel, startNumbers, onE
                               {currentValue || `(${j + 1}) 빈칸 — 클릭하여 선택`}
                             </button>
 
-                            {/* Options dropdown */}
                             {isOpen && !submitted && (
                               <div className="absolute top-full left-0 mt-1 w-full bg-white border border-indigo-200 rounded-xl shadow-xl p-2 z-30 flex flex-col gap-1">
                                 <p className="text-[10px] font-bold text-slate-400 px-2 pb-1 border-b border-slate-100 mb-1">
@@ -225,7 +274,6 @@ export default function ExamSheetStage({ items, categoryLabel, startNumbers, onE
                             )}
                           </>
                         ) : (
-                          /* 2단계: text input per blank */
                           <input
                             type="text"
                             value={currentValue}
@@ -243,7 +291,6 @@ export default function ExamSheetStage({ items, categoryLabel, startNumbers, onE
                         )}
                       </div>
 
-                      {/* Score indicator per blank */}
                       {submitted && (
                         blankPassed
                           ? <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0 mt-2.5" />
@@ -260,7 +307,7 @@ export default function ExamSheetStage({ items, categoryLabel, startNumbers, onE
                   <p className="text-[10px] font-bold text-violet-600 mb-1.5 uppercase tracking-wide">정답</p>
                   <div className="flex flex-col gap-0.5">
                     {item.blanks.map((blank, j) => (
-                      <p key={j} className="text-xs text-slate-700">
+                      <p key={j} className="text-xs text-slate-700 whitespace-pre-wrap">
                         <span className="font-bold text-indigo-500">({j + 1})</span> {blank}
                       </p>
                     ))}
